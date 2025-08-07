@@ -2,175 +2,169 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Snake Eats Words 🐰</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Snake Word Game - Cute Edition</title>
   <style>
     body {
-      font-family: 'Comic Sans MS', cursive, sans-serif;
-      background-color: #ffe6f0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 0;
-    }
-    h1 {
-      color: #ff66b3;
-      margin-top: 20px;
+      font-family: 'Comic Sans MS', cursive;
+      background-color: #FFF0F5;
+      text-align: center;
     }
     canvas {
-      border: 4px dashed #ff99cc;
-      background-color: #fff0f5;
+      border: 4px dashed #FFB6C1;
+      background-color: #FFF;
       margin-top: 20px;
     }
-    #info {
+    #score {
+      font-size: 20px;
       margin-top: 10px;
-      font-size: 18px;
-      color: #cc0066;
     }
-    #restart {
+    #game-over {
+      display: none;
+      font-size: 24px;
+      color: #e91e63;
       margin-top: 20px;
+    }
+    button {
       padding: 10px 20px;
-      font-size: 16px;
-      background-color: #ffccdd;
+      background-color: #FF69B4;
+      color: white;
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      color: #99004d;
-    }
-    #restart:hover {
-      background-color: #ffaacc;
+      font-size: 18px;
     }
     .bunny {
-      font-size: 24px;
+      font-size: 30px;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>🐰 Snake Eats Words 🐰</h1>
+  <h1>🐰 Snake Word Game 🐰</h1>
+  <div class="bunny">Let's help the bunny snake eat the right words!</div>
   <canvas id="game" width="400" height="400"></canvas>
-  <div id="info">Điểm: <span id="score">0</span> | Kỷ lục: <span id="highScore">0</span></div>
-  <button id="restart" onclick="startGame()">🔁 Chơi lại</button>
-  <audio id="bgMusic" loop>
-    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_77cf8b1d2e.mp3?filename=funny-happy-pop-11067.mp3" type="audio/mpeg">
-  </audio>
+  <div id="score">Score: 0 | High Score: 0</div>
+  <div id="game-over">Game Over! <br><button onclick="startGame()">Play Again 🔁</button></div>
+  <audio id="bg-music" src="https://www.bensound.com/bensound-music/bensound-buddy.mp3" loop></audio>
 
   <script>
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
-    const box = 20;
-    const rows = canvas.height / box;
-    const cols = canvas.width / box;
-
-    let snake = [{ x: 5 * box, y: 5 * box }];
-    let direction = "RIGHT";
-    let food;
-    let wordList = ["recycle", "earth", "nature", "energy", "tree", "ecosystem", "pollution", "green", "climate", "air"];
+    const grid = 20;
+    let snake = [{ x: 160, y: 160 }];
+    let dx = grid;
+    let dy = 0;
+    let food = {};
+    let distractors = [];
+    let words = ["recycle", "climate", "waste", "pollution", "green", "energy", "water", "plant", "reduce", "nature"];
+    let wrongs = ["banana", "phone", "robot", "shoe", "keyboard"];
     let currentWord = "";
     let score = 0;
-    let highScore = localStorage.getItem("highScore") || 0;
+    let highScore = 0;
+    let gameInterval;
+    const music = document.getElementById("bg-music");
 
-    const scoreSpan = document.getElementById("score");
-    const highScoreSpan = document.getElementById("highScore");
-    highScoreSpan.textContent = highScore;
-    const music = document.getElementById("bgMusic");
+    function getRandomPosition() {
+      return {
+        x: Math.floor(Math.random() * 20) * grid,
+        y: Math.floor(Math.random() * 20) * grid,
+      };
+    }
 
-    function drawSnake() {
-      for (let i = 0; i < snake.length; i++) {
-        ctx.fillStyle = i === 0 ? "#ff66b3" : "#ffb3d9";
-        ctx.fillRect(snake[i].x, snake[i].y, box, box);
-        ctx.strokeStyle = "#fff";
-        ctx.strokeRect(snake[i].x, snake[i].y, box, box);
+    function placeWords() {
+      currentWord = words[Math.floor(Math.random() * words.length)];
+      food = { ...getRandomPosition(), word: currentWord };
+      distractors = [];
+      for (let i = 0; i < 3; i++) {
+        distractors.push({ ...getRandomPosition(), word: wrongs[Math.floor(Math.random() * wrongs.length)] });
       }
     }
 
-    function getRandomWord(startChar = "") {
-      let options = startChar
-        ? wordList.filter(word => word.startsWith(startChar))
-        : [...wordList];
-      return options.length > 0 ? options[Math.floor(Math.random() * options.length)] : "";
-    }
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    function placeFood() {
-      food = {
-        x: Math.floor(Math.random() * cols) * box,
-        y: Math.floor(Math.random() * rows) * box,
-      };
-      let lastChar = currentWord ? currentWord.slice(-1).toLowerCase() : "";
-      currentWord = getRandomWord(lastChar);
-    }
+      // Draw snake
+      ctx.fillStyle = "#FF69B4";
+      snake.forEach(part => ctx.fillRect(part.x, part.y, grid, grid));
 
-    function drawFood() {
-      ctx.fillStyle = "#cc0066";
-      ctx.font = "16px Comic Sans MS";
-      ctx.fillText(currentWord, food.x + 2, food.y + 16);
-      ctx.fillText("🐰", food.x + 2, food.y + 32);
-    }
+      // Draw food
+      ctx.fillStyle = "#4CAF50";
+      ctx.fillText(food.word, food.x + 2, food.y + 15);
 
-    function update() {
-      let head = { ...snake[0] };
+      // Draw distractors
+      ctx.fillStyle = "#e91e63";
+      distractors.forEach(d => ctx.fillText(d.word, d.x + 2, d.y + 15));
 
-      if (direction === "LEFT") head.x -= box;
-      if (direction === "UP") head.y -= box;
-      if (direction === "RIGHT") head.x += box;
-      if (direction === "DOWN") head.y += box;
+      // Move snake
+      const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+      snake.unshift(head);
 
-      // Game over
+      // Check collisions
+      if (head.x === food.x && head.y === food.y) {
+        score++;
+        if (score > highScore) highScore = score;
+        placeWords();
+      } else {
+        snake.pop();
+      }
+
+      for (let d of distractors) {
+        if (head.x === d.x && head.y === d.y) {
+          endGame();
+          return;
+        }
+      }
+
       if (
         head.x < 0 ||
         head.y < 0 ||
         head.x >= canvas.width ||
         head.y >= canvas.height ||
-        snake.some(s => s.x === head.x && s.y === head.y)
+        snake.slice(1).some(part => part.x === head.x && part.y === head.y)
       ) {
-        clearInterval(game);
-        ctx.fillStyle = "#ff3399";
-        ctx.font = "24px Comic Sans MS";
-        ctx.fillText("🐰 Game Over! 🐰", canvas.width / 4, canvas.height / 2);
-        music.pause();
+        endGame();
         return;
       }
 
-      snake.unshift(head);
+      document.getElementById("score").innerText = `Score: ${score} | High Score: ${highScore}`;
+    }
 
-      if (head.x === food.x && head.y === food.y) {
-        score++;
-        scoreSpan.textContent = score;
-        if (score > highScore) {
-          highScore = score;
-          localStorage.setItem("highScore", highScore);
-          highScoreSpan.textContent = highScore;
-        }
-        placeFood();
-      } else {
-        snake.pop();
-      }
+    function endGame() {
+      clearInterval(gameInterval);
+      document.getElementById("game-over").style.display = "block";
+      music.pause();
+    }
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawSnake();
-      drawFood();
+    function startGame() {
+      snake = [{ x: 160, y: 160 }];
+      dx = grid;
+      dy = 0;
+      score = 0;
+      document.getElementById("game-over").style.display = "none";
+      placeWords();
+      music.play();
+      gameInterval = setInterval(draw, 600);
     }
 
     document.addEventListener("keydown", e => {
-      if (e.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
-      else if (e.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
-      else if (e.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
-      else if (e.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+      if (e.key === "ArrowLeft" && dx === 0) {
+        dx = -grid;
+        dy = 0;
+      } else if (e.key === "ArrowRight" && dx === 0) {
+        dx = grid;
+        dy = 0;
+      } else if (e.key === "ArrowUp" && dy === 0) {
+        dy = -grid;
+        dx = 0;
+      } else if (e.key === "ArrowDown" && dy === 0) {
+        dy = grid;
+        dx = 0;
+      }
     });
 
-    let game;
-    function startGame() {
-      clearInterval(game);
-      snake = [{ x: 5 * box, y: 5 * box }];
-      direction = "RIGHT";
-      score = 0;
-      scoreSpan.textContent = score;
-      music.currentTime = 0;
-      music.play();
-      placeFood();
-      game = setInterval(update, 600); // slow speed
-    }
-
-    window.onload = startGame;
+    ctx.font = "14px Comic Sans MS";
+    startGame();
   </script>
 </body>
 </html>
