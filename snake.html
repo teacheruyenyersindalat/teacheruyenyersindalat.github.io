@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Snake Eats the Right Word</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f8ff;
+      text-align: center;
+    }
+    canvas {
+      background: #ffffff;
+      display: block;
+      margin: 0 auto;
+      border: 2px solid #000;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+  </style>
+</head>
+<body>
+  <h1>🐍 Snake Eats the Right Word</h1>
+  <p>Use arrow keys to move the snake. Eat the word that starts with the last letter of the previous one.</p>
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const grid = 20;
+    let snake = [{x: grid*5, y: grid*5}];
+    let dx = grid;
+    let dy = 0;
+    let wordList = [
+      "air", "recycle", "environment", "nature", "energy",
+      "tree", "earth", "water", "pollution", "climate"
+    ];
+    let currentWord = "";
+    let food = randomPosition();
+    let score = 0;
+
+    function randomWord(startLetter=null) {
+      let candidates = wordList.filter(w => startLetter ? w[0].toLowerCase() === startLetter.toLowerCase() : true);
+      if (candidates.length === 0) return wordList[Math.floor(Math.random() * wordList.length)];
+      return candidates[Math.floor(Math.random() * candidates.length)];
+    }
+
+    function randomPosition() {
+      return {
+        x: Math.floor(Math.random() * (canvas.width / grid)) * grid,
+        y: Math.floor(Math.random() * (canvas.height / grid)) * grid
+      };
+    }
+
+    function drawFood(word) {
+      ctx.fillStyle = "green";
+      ctx.fillRect(food.x, food.y, grid, grid);
+      ctx.fillStyle = "white";
+      ctx.font = "12px Arial";
+      ctx.fillText(word, food.x + 2, food.y + 14);
+    }
+
+    function gameOver() {
+      alert("Game Over! Score: " + score);
+      document.location.reload();
+    }
+
+    function loop() {
+      requestAnimationFrame(loop);
+
+      if (++count < 5) return;
+      count = 0;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      let head = {x: snake[0].x + dx, y: snake[0].y + dy};
+      if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+        return gameOver();
+      }
+
+      for (let cell of snake) {
+        if (cell.x === head.x && cell.y === head.y) return gameOver();
+      }
+
+      snake.unshift(head);
+
+      if (head.x === food.x && head.y === food.y) {
+        let lastChar = currentWord ? currentWord.slice(-1).toLowerCase() : null;
+        let correct = !lastChar || currentWord[0].toLowerCase() === lastChar;
+
+        if (!correct) return gameOver();
+
+        score++;
+        currentWord = randomWord(currentWord ? currentWord.slice(-1) : null);
+        food = randomPosition();
+      } else {
+        snake.pop();
+      }
+
+      ctx.fillStyle = "blue";
+      for (let cell of snake) {
+        ctx.fillRect(cell.x, cell.y, grid-1, grid-1);
+      }
+
+      drawFood(currentWord);
+    }
+
+    let count = 0;
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "ArrowLeft" && dx === 0) {
+        dx = -grid; dy = 0;
+      } else if (e.key === "ArrowUp" && dy === 0) {
+        dx = 0; dy = -grid;
+      } else if (e.key === "ArrowRight" && dx === 0) {
+        dx = grid; dy = 0;
+      } else if (e.key === "ArrowDown" && dy === 0) {
+        dx = 0; dy = grid;
+      }
+    });
+
+    currentWord = randomWord();
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
