@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wildlife Conservation - Homework Task (Complete)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #020617;
+            --emerald-glow: #34d399;
+            --rose-glow: #f43f5e;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: white;
+            overflow-x: hidden;
+            min-height: 100vh;
+            cursor: none;
+        }
+
+        .font-display { font-family: 'Space Grotesk', sans-serif; }
+
+        /* --- MAGIC CURSOR --- */
+        #cursor-dot, #cursor-outline {
+            position: fixed; top: 0; left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%; pointer-events: none; z-index: 9999;
+        }
+        #cursor-dot { width: 8px; height: 8px; background: white; }
+        #cursor-outline {
+            width: 40px; height: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+        body:hover #cursor-outline { width: 50px; height: 50px; border-color: var(--emerald-glow); }
+
+        /* --- DYNAMIC BACKGROUND --- */
+        .aurora-bg {
+            position: fixed; inset: 0; z-index: -10;
+            background: radial-gradient(circle at 50% 120%, #1e1b4b 10%, #020617 80%);
+        }
+        .orb {
+            position: absolute; border-radius: 50%; filter: blur(100px);
+            animation: orbFloat 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .orb-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: rgba(16, 185, 129, 0.3); }
+        .orb-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: rgba(79, 70, 229, 0.3); animation-delay: -5s; }
+        .orb-3 { top: 40%; left: 40%; width: 30vw; height: 30vw; background: rgba(244, 63, 94, 0.2); animation-delay: -10s; }
+
+        @keyframes orbFloat { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 30px) scale(1.1); } }
+
+        /* --- GLASS CARD PRO --- */
+        .glass-pro {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border-radius: 32px;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        /* --- ANIMATED TEXT --- */
+        .gradient-text {
+            background: linear-gradient(to right, #ffffff, #34d399, #22d3ee, #ffffff);
+            background-size: 300%;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: shine 8s linear infinite;
+        }
+        @keyframes shine { to { background-position: 300%; } }
+
+        /* --- BUTTONS --- */
+        .neon-btn {
+            position: relative; overflow: hidden;
+            background: transparent; border: 1px solid rgba(52, 211, 153, 0.5);
+            color: #34d399; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;
+            transition: all 0.4s ease; z-index: 1;
+            box-shadow: 0 0 10px rgba(52, 211, 153, 0.1);
+        }
+        .neon-btn::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #34d399; transform: scaleX(0); transform-origin: right;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: -1;
+        }
+        .neon-btn:hover { color: #020617; box-shadow: 0 0 30px rgba(52, 211, 153, 0.6); border-color: #34d399; transform: scale(1.05); }
+        .neon-btn:hover::before { transform: scaleX(1); transform-origin: left; }
+
+        .neon-btn-rose { border-color: rgba(244, 63, 94, 0.5); color: #f43f5e; box-shadow: 0 0 10px rgba(244, 63, 94, 0.1); }
+        .neon-btn-rose::before { background: #f43f5e; }
+        .neon-btn-rose:hover { color: white; box-shadow: 0 0 30px rgba(244, 63, 94, 0.6); border-color: #f43f5e; }
+
+        /* --- CHOICE BUTTONS --- */
+        .choice-btn {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .choice-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--emerald-glow);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .choice-btn.selected {
+            background: rgba(52, 211, 153, 0.15);
+            border-color: var(--emerald-glow);
+            color: var(--emerald-glow);
+            box-shadow: 0 0 20px rgba(52, 211, 153, 0.2);
+        }
+        .choice-btn.selected::before {
+            content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+            position: absolute; left: 20px;
+        }
+
+        /* --- INPUTS --- */
+        .glow-input {
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            color: white; transition: all 0.3s;
+        }
+        .glow-input:focus {
+            outline: none; border-color: #34d399; background: rgba(0,0,0,0.6);
+            box-shadow: 0 0 20px rgba(52, 211, 153, 0.2); transform: translateY(-2px);
+        }
+
+        /* --- ANIMATIONS --- */
+        .slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(30px); }
+        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4">
+
+    <!-- Custom Cursor -->
+    <div id="cursor-dot"></div>
+    <div id="cursor-outline"></div>
+
+    <!-- Background -->
+    <div class="aurora-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div style="position:fixed; inset:0; opacity:0.05; background:url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22 opacity=%221%22/%3E%3C/svg%3E'); pointer-events:none;"></div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="w-full max-w-5xl relative z-10">
+
+        <!-- === START SCREEN === -->
+        <div id="start-screen" class="text-center slide-up py-12">
+            <div class="inline-block mb-6 px-4 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-md">
+                <i class="fas fa-seedling text-emerald-400 mr-2"></i>
+                <span class="text-xs font-bold tracking-[0.2em] text-emerald-100 uppercase">Unit 8 Review</span>
+            </div>
+
+            <h1 class="font-display text-7xl md:text-8xl font-black mb-8 leading-tight">
+                <span class="gradient-text">WILDLIFE</span><br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 drop-shadow-[0_0_20px_rgba(52,211,153,0.5)]">QUIZ</span>
+            </h1>
+
+            <p class="text-xl text-slate-300 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
+                Task: Read the statements and identify if they are <br>
+                <span class="font-bold text-white">True</span>, <span class="font-bold text-white">False</span>, or <span class="font-bold text-white">Not Given</span>.
+            </p>
+
+            <button id="btn-start" class="neon-btn px-10 py-5 rounded-xl text-lg group">
+                Start Assessment <i class="fas fa-chevron-right ml-2 text-sm group-hover:translate-x-1 transition-transform"></i>
+            </button>
+        </div>
+
+        <!-- === QUIZ SCREEN === -->
+        <div id="quiz-screen" class="hidden w-full max-w-4xl mx-auto">
+            <!-- Top Bar -->
+            <div class="flex justify-between items-end mb-6 slide-up">
+                <div>
+                    <div class="text-xs font-bold text-slate-400 tracking-widest uppercase mb-2">Statement</div>
+                    <div class="flex items-center gap-3">
+                        <span id="progress-text" class="text-4xl font-display font-bold text-white">01</span>
+                        <span id="total-text" class="text-slate-500 text-xl font-display">/ 05</span>
+                    </div>
+                </div>
+                <button id="btn-sound" class="w-12 h-12 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all hover:scale-110 text-emerald-400">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+            </div>
+
+            <!-- Card -->
+            <div id="question-card" class="glass-pro p-8 md:p-12 min-h-[400px] flex flex-col justify-center relative slide-up">
+                <!-- Injected via JS -->
+            </div>
+
+            <!-- Controls -->
+            <div class="mt-8 flex justify-between items-center slide-up" style="animation-delay: 0.2s">
+                <button id="btn-restart" class="text-slate-500 hover:text-white text-sm font-bold flex items-center gap-2 transition-colors">
+                    <i class="fas fa-rotate-left"></i> RESTART
+                </button>
+                <button id="btn-next" class="neon-btn-rose px-8 py-3 rounded-xl text-lg min-w-[150px]">
+                    NEXT
+                </button>
+            </div>
+        </div>
+
+        <!-- === END SCREEN === -->
+        <div id="end-screen" class="hidden w-full max-w-3xl mx-auto slide-up">
+            <div class="glass-pro p-10 md:p-16 text-center border-emerald-500/30">
+                <div class="w-24 h-24 mx-auto mb-8 relative">
+                    <div class="absolute inset-0 bg-emerald-500 rounded-full animate-ping opacity-20"></div>
+                    <div class="relative w-full h-full bg-gradient-to-tr from-emerald-400 to-cyan-500 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(52,211,153,0.4)]">
+                        <i class="fas fa-clipboard-check text-4xl text-white"></i>
+                    </div>
+                </div>
+
+                <h2 class="font-display text-5xl font-bold text-white mb-4">Quiz Completed!</h2>
+                <p class="text-slate-300 text-lg mb-10">Please enter your details to submit your answers.</p>
+
+                <div class="grid gap-4 max-w-md mx-auto mb-10 text-left">
+                    <div>
+                        <label class="text-xs font-bold text-emerald-400 uppercase ml-2 mb-1 block">Full Name</label>
+                        <input type="text" id="input-name" class="glow-input w-full p-4 rounded-xl text-lg" placeholder="Enter name...">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-emerald-400 uppercase ml-2 mb-1 block">Class</label>
+                        <input type="text" id="input-class" class="glow-input w-full p-4 rounded-xl text-lg" placeholder="e.g. 12A1">
+                    </div>
+                </div>
+
+                <div id="submit-status" class="hidden mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold"></div>
+
+                <button id="btn-submit" class="neon-btn px-12 py-4 rounded-xl w-full max-w-md text-lg shadow-[0_0_20px_rgba(52,211,153,0.3)]">
+                    SUBMIT ANSWERS
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- CUSTOM CURSOR ---
+        const cursorDot = document.getElementById("cursor-dot");
+        const cursorOutline = document.getElementById("cursor-outline");
+        window.addEventListener("mousemove", (e) => {
+            cursorDot.style.left = `${e.clientX}px`;
+            cursorDot.style.top = `${e.clientY}px`;
+            cursorOutline.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 500, fill: "forwards" });
+        });
+
+        // --- CONFIGURATION & GOOGLE FORM MAPPING ---
+        const CONFIG = {
+            questions: [
+                { id: 1, type: 'choice', prompt: 'More than 600 volunteers joined sea turtle conservation activities on Con Dao Island.', options: ['True', 'False', 'Not Given'] },
+                { id: 2, type: 'choice', prompt: 'The management board of Nha Trang Bay limits the number of divers to avoid putting too much stress on the coral ecosystem.', options: ['True', 'False', 'Not Given'] },
+                { id: 3, type: 'choice', prompt: 'The “Paint for Wildlife” exhibition will be held in Con Dao next week.', options: ['True', 'False', 'Not Given'] },
+                { id: 4, type: 'choice', prompt: 'Sea turtle populations have increased significantly in many areas around the world.', options: ['True', 'False', 'Not Given'] },
+                { id: 5, type: 'choice', prompt: 'The students who created the paintings are all from Con Dao and Nha Trang.', options: ['True', 'False', 'Not Given'] }
+            ],
+            
+            // --- GOOGLE FORM CONFIGURATION (ĐÃ CẬP NHẬT TỪ URL BẠN CUNG CẤP) ---
+            googleForm: {
+                // Link nộp bài (Đổi từ viewform -> formResponse)
+                action: "https://docs.google.com/forms/d/e/1FAIpQLScLf84c9oNzkCh0KyE9gZhzrnQWiyQNLP71by8xa4fFwH-X8A/formResponse", 
+                
+                // Các ID đã trích xuất chính xác
+                fields: {
+                    name: "entry.1560964658",
+                    class: "entry.589644788",
+                    q1: "entry.2058599116",
+                    q2: "entry.935558698",
+                    q3: "entry.1822676553",
+                    q4: "entry.1408617026",
+                    q5: "entry.2142060033"
+                }
+            }
+        };
+
+        const state = { step: 0, answers: new Array(CONFIG.questions.length).fill(null), muted: false };
+
+        // --- AUDIO ENGINE ---
+        let synth, successSynth;
+        async function initAudio() {
+            await Tone.start();
+            synth = new Tone.Synth({ oscillator: { type: "fmsine", modulationType: "square" }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.5 } }).toDestination();
+            successSynth = new Tone.PolySynth(Tone.Synth).toDestination();
+            successSynth.volume.value = -8;
+        }
+
+        function playSound(type) {
+            if (state.muted) return;
+            try {
+                const now = Tone.now();
+                if (type === 'hover') synth.triggerAttackRelease("C6", "64n", now, 0.05);
+                if (type === 'click') synth.triggerAttackRelease("F5", "32n", now);
+                if (type === 'select') synth.triggerAttackRelease("A5", "16n", now);
+                if (type === 'success') successSynth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "8n", now);
+            } catch(e) {}
+        }
+
+        // --- GAME LOGIC ---
+        const els = {
+            screens: { start: document.getElementById('start-screen'), quiz: document.getElementById('quiz-screen'), end: document.getElementById('end-screen') },
+            card: document.getElementById('question-card'),
+            progress: document.getElementById('progress-text'),
+            total: document.getElementById('total-text'),
+            btns: { start: document.getElementById('btn-start'), next: document.getElementById('btn-next'), submit: document.getElementById('btn-submit') }
+        };
+
+        els.total.textContent = `/ 0${CONFIG.questions.length}`;
+
+        els.btns.start.addEventListener('click', async () => {
+            await initAudio();
+            playSound('success');
+            transitionScreen(els.screens.start, els.screens.quiz);
+            renderQuestion(0);
+        });
+
+        els.btns.next.addEventListener('click', () => {
+            playSound('click');
+            if (state.step < CONFIG.questions.length - 1) {
+                state.step++;
+                renderQuestion(state.step);
+            } else {
+                transitionScreen(els.screens.quiz, els.screens.end);
+                playSound('success');
+                fireConfetti();
+            }
+        });
+
+        document.getElementById('btn-restart').addEventListener('click', () => location.reload());
+
+        function transitionScreen(from, to) {
+            from.style.opacity = '0';
+            from.style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                from.classList.add('hidden');
+                to.classList.remove('hidden');
+                void to.offsetWidth; 
+                to.classList.add('slide-up');
+            }, 300);
+        }
+
+        function renderQuestion(idx) {
+            const q = CONFIG.questions[idx];
+            els.progress.textContent = `0${idx + 1}`;
+            
+            els.card.innerHTML = '';
+            els.card.classList.remove('slide-up');
+            void els.card.offsetWidth;
+            els.card.classList.add('slide-up');
+
+            const title = document.createElement('h3');
+            title.className = 'text-2xl md:text-3xl font-bold mb-8 font-display text-white leading-tight';
+            title.innerHTML = `<span class="text-emerald-400 mr-2">Q${idx+1}.</span> ${q.prompt}`;
+            els.card.appendChild(title);
+
+            if (q.type === 'choice') renderChoice(q, idx);
+        }
+
+        function renderChoice(q, idx) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'grid grid-cols-1 md:grid-cols-3 gap-4 w-full mt-4';
+            
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn p-6 rounded-xl text-center';
+                btn.textContent = opt;
+                if (state.answers[idx] === opt) btn.classList.add('selected');
+
+                btn.addEventListener('click', () => {
+                    playSound('select');
+                    wrapper.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    state.answers[idx] = opt;
+                });
+                wrapper.appendChild(btn);
+            });
+            els.card.appendChild(wrapper);
+        }
+
+        function fireConfetti() {
+            var duration = 3 * 1000;
+            var end = Date.now() + duration;
+            (function frame() {
+                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
+                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+
+        // --- REAL SUBMIT FUNCTION (UPDATED) ---
+        els.btns.submit.addEventListener('click', () => {
+            const name = document.getElementById('input-name').value;
+            const className = document.getElementById('input-class').value;
+            const btn = els.btns.submit;
+            const status = document.getElementById('submit-status');
+
+            if(!name || !className) { 
+                alert("Please enter your Name and Class!"); 
+                return; 
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> UPLOADING...';
+
+            // 1. Prepare Data
+            const formData = new FormData();
+            formData.append(CONFIG.googleForm.fields.name, name);
+            formData.append(CONFIG.googleForm.fields.class, className);
+            
+            // Map answers to entries
+            state.answers.forEach((ans, idx) => {
+                const key = `q${idx + 1}`;
+                const entryId = CONFIG.googleForm.fields[key];
+                formData.append(entryId, ans || "No Answer");
+            });
+
+            // 2. Send Data using Fetch (no-cors)
+            fetch(CONFIG.googleForm.action, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: formData
+            })
+            .then(() => {
+                // Success Handling
+                status.textContent = "✅ SUCCESS! Your teacher has received the answers.";
+                status.className = "mb-6 p-4 rounded-xl bg-green-500/20 border border-green-500/40 text-green-400 font-bold block";
+                btn.textContent = "DONE";
+                playSound('success');
+                fireConfetti();
+            })
+            .catch(err => {
+                // Error Handling
+                console.error(err);
+                status.textContent = "⚠️ ERROR: Could not connect to Google. Please check your internet.";
+                status.className = "mb-6 p-4 rounded-xl bg-red-500/20 border border-red-500/40 text-red-400 font-bold block";
+                btn.disabled = false;
+                btn.textContent = "TRY AGAIN";
+            });
+        });
+
+    </script>
+</body>
+</html>
