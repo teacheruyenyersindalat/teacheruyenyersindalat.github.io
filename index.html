@@ -176,9 +176,9 @@
 
         /* --- CARDS GRID --- */
         .cards-grid {
-            /* UPDATE: Chuyển thành 4 cột để chứa thêm thẻ Homework */
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            gap: 30px; width: 100%; 
+            /* UPDATE: Chuyển thành 5 cột để chứa thêm thẻ Speaking */
+            display: grid; grid-template-columns: repeat(5, 1fr);
+            gap: 20px; width: 100%; /* Giảm gap một chút để vừa 5 thẻ */
         }
 
         .game-card {
@@ -210,9 +210,10 @@
         .theme-1 .card-icon-box { color: #38bdf8; box-shadow: 0 0 40px rgba(56, 189, 248, 0.2); }
         .theme-2 .card-icon-box { color: #c084fc; box-shadow: 0 0 40px rgba(192, 132, 252, 0.2); }
         .theme-3 .card-icon-box { color: #fbbf24; box-shadow: 0 0 40px rgba(251, 191, 36, 0.2); }
-        
-        /* NEW THEME FOR HOMEWORK (Rose/Red) */
         .theme-4 .card-icon-box { color: #f43f5e; box-shadow: 0 0 40px rgba(244, 63, 94, 0.2); }
+
+        /* NEW THEME FOR SPEAKING (Pink/Fuchsia) */
+        .theme-5 .card-icon-box { color: #e879f9; box-shadow: 0 0 40px rgba(232, 121, 249, 0.2); }
 
         .card-title { font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem; font-weight: 700; margin-bottom: 10px; }
         .card-desc { font-size: 1.2rem; color: #cbd5e1; line-height: 1.4; margin-bottom: 25px; flex-grow: 1; }
@@ -229,8 +230,9 @@
         .btn-1 { background: linear-gradient(45deg, #0284c7, #2563eb); box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4); }
         .btn-2 { background: linear-gradient(45deg, #7e22ce, #9333ea); box-shadow: 0 4px 20px rgba(147, 51, 234, 0.4); }
         .btn-3 { background: linear-gradient(45deg, #d97706, #f59e0b); box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4); }
-        /* NEW BUTTON FOR HOMEWORK */
         .btn-4 { background: linear-gradient(45deg, #e11d48, #be123c); box-shadow: 0 4px 20px rgba(190, 18, 60, 0.4); }
+        /* NEW BUTTON FOR SPEAKING */
+        .btn-5 { background: linear-gradient(45deg, #db2777, #ec4899); box-shadow: 0 4px 20px rgba(219, 39, 119, 0.4); }
 
         .play-btn:hover { transform: scale(1.03); filter: brightness(1.2); }
         
@@ -407,7 +409,23 @@
                 </div>
             </div>
 
-            <!-- NEW CARD 4: HOMEWORK -->
+            <!-- CARD 5: SPEAKING TASK (MODIFIED TO OPEN MODAL) -->
+            <div class="game-card theme-5">
+                <div class="card-icon-box">
+                    <i class="fas fa-video"></i>
+                </div>
+                <div class="card-content w-full flex flex-col h-full">
+                    <h3 class="card-title">Speaking Task</h3>
+                    <div class="text-xl font-bold text-pink-300 uppercase tracking-widest mb-4 bg-pink-900/30 px-4 py-2 rounded-lg border border-pink-500/30 inline-block">Skill: Speaking</div>
+                    <p class="card-desc">"Which adventure would you like to join the most — Côn Đảo, Hạ Long Bay, or Hà Nội? Why?"</p>
+                    <!-- UPDATED: Button triggers JS function instead of linking -->
+                    <button onclick="openSpeakingVideo()" class="play-btn btn-5 border-none cursor-pointer w-full">
+                        <span>Start</span> <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Card 4: HOMEWORK -->
             <div class="game-card theme-4">
                 <div class="card-icon-box">
                     <i class="fas fa-book-open"></i>
@@ -508,6 +526,27 @@
             const videoUrl = getEmbedUrl(rawVideoLink);
 
             frame.src = videoUrl; 
+            modal.classList.add('active');
+        }
+
+        // --- NEW: FUNCTION CHO SPEAKING TASK ---
+        function openSpeakingVideo() {
+            const modal = document.getElementById('video-modal');
+            const frame = document.getElementById('video-frame');
+            
+            // =================================================================
+            // CÔ DÁN LINK VIDEO CÂU HỎI (SPEAKING) VÀO GIỮA DẤU NGOẶC KÉP DƯỚI ĐÂY:
+            // Ví dụ: "https://drive.google.com/file/d/xxxxx/view"
+            const speakingLink = "https://drive.google.com/file/d/1g14WU9DGfhBNuYqoMNMeWQ_gjLw-xpAM/view?usp=sharing"; 
+            // =================================================================
+            
+            if (!speakingLink) {
+                alert("Cô chưa dán link video Speaking vào code! Hãy mở file index.html và tìm dòng 'speakingLink'.");
+                return;
+            }
+
+            const videoUrl = getEmbedUrl(speakingLink);
+            frame.src = videoUrl;
             modal.classList.add('active');
         }
 
