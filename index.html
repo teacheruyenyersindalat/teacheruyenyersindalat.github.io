@@ -43,6 +43,7 @@
             padding: 20px;
             box-sizing: border-box;
             opacity: 0; transition: opacity 0.5s ease; /* Ẩn đến khi load xong */
+            z-index: 10; /* Đảm bảo nội dung nằm trên nền */
         }
 
         /* --- BACKGROUND FX --- */
@@ -74,7 +75,7 @@
             z-index: -5; pointer-events: none;
         }
 
-        /* 1. Đom đóm (Fireflies) */
+        /* 1. Đom đóm thường (Fireflies) */
         .firefly {
             position: absolute; width: 6px; height: 6px;
             background-color: #fbbf24; border-radius: 50%;
@@ -89,12 +90,48 @@
         .firefly:nth-child(5) { top: 10%; left: 40%; animation-delay: 8s; animation-duration: 30s; scale: 0.6; }
         .firefly:nth-child(6) { top: 90%; left: 50%; animation-delay: 3s; animation-duration: 15s; }
 
+        /* --- SECRET FIREFLY (Đom đóm bí ẩn - UPDATED) --- */
+        .secret-firefly {
+            position: fixed; 
+            width: 9px; height: 9px; /* UPDATED: Nhỏ lại, chỉ to hơn 6px một chút */
+            background-color: #ef4444; /* Màu đỏ */
+            border-radius: 50%;
+            box-shadow: 0 0 15px 4px rgba(239, 68, 68, 0.6); 
+            
+            /* Animation bay chậm */
+            animation: secret-fly 45s linear infinite;
+            
+            opacity: 0.4; /* Mờ hơn một chút để khó thấy */
+            z-index: 90; 
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all 0.4s ease-out;
+        }
+        
+        /* Hover vào là đứng yên (pause) và sáng rực lên */
+        .secret-firefly:hover { 
+            transform: scale(1.8); 
+            opacity: 1; 
+            box-shadow: 0 0 30px 10px rgba(239, 68, 68, 1);
+            animation-play-state: paused;
+        }
+
         @keyframes fly {
             0% { transform: translate(0, 0) scale(0); opacity: 0; }
             10% { opacity: 1; transform: scale(1); }
             50% { transform: translate(100px, -100px); }
             90% { opacity: 1; transform: scale(1); }
             100% { transform: translate(200px, -200px) scale(0); opacity: 0; }
+        }
+
+        @keyframes secret-fly {
+            0% { top: 90%; left: 10%; opacity: 0; }
+            10% { opacity: 1; }
+            25% { top: 20%; left: 30%; }
+            50% { top: 80%; left: 60%; }
+            75% { top: 15%; left: 90%; }
+            90% { opacity: 1; }
+            100% { top: 90%; left: 10%; opacity: 0; }
         }
 
         /* 2. Lá rơi (Falling Leaves) */
@@ -146,8 +183,13 @@
 
         .logo-container { display: flex; align-items: center; gap: 20px; }
         .logo-img-wrapper { 
-            width: 80px; height: 80px; /* Vừa vặn */
+            width: 120px; height: 120px; /* UPDATED: Tăng từ 80px lên 120px */
             filter: drop-shadow(0 0 15px rgba(234, 88, 12, 0.9));
+            cursor: pointer; /* Hiển thị con trỏ dạng click */
+            transition: transform 0.3s ease;
+        }
+        .logo-img-wrapper:hover {
+            transform: scale(1.05); /* Hiệu ứng zoom nhẹ khi hover */
         }
         .logo-img { width: 100%; height: 100%; object-fit: contain; animation: breathe 4s infinite ease-in-out; }
         @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
@@ -255,7 +297,7 @@
         }
         .intro-btn:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
 
-        /* --- MODAL VIDEO (POPUP) --- */
+        /* --- MODAL VIDEO & SECRET --- */
         .modal-overlay {
             position: fixed; inset: 0; z-index: 100;
             background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
@@ -272,6 +314,66 @@
             position: relative; border: 1px solid rgba(255,255,255,0.1);
         }
         .modal-overlay.active .modal-content { transform: scale(1); }
+
+        /* --- BEAUTIFUL SECRET MODAL (Updated) --- */
+        .secret-modal-body {
+            width: 100%; height: 100%;
+            /* Nền đen trong suốt sang trọng */
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(25px);
+            
+            /* Viền phát sáng huyền bí */
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 60px rgba(239, 68, 68, 0.15), inset 0 0 30px rgba(239, 68, 68, 0.05);
+            
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: white; padding: 50px; text-align: center;
+            position: relative;
+        }
+
+        .secret-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem; font-weight: 800; letter-spacing: 4px;
+            background: linear-gradient(to right, #f87171, #facc15, #f87171);
+            background-size: 200% auto;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 40px;
+            animation: gradient-text 3s linear infinite;
+        }
+        @keyframes gradient-text { to { background-position: 200% center; } }
+
+        .secret-input {
+            width: 100%; max-width: 320px;
+            padding: 18px 25px; border-radius: 16px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            color: white; font-size: 1.4rem; outline: none; text-align: center;
+            font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+            transition: all 0.3s;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .secret-input::placeholder { color: rgba(255,255,255,0.3); font-weight: 400; font-size: 1rem; letter-spacing: 1px;}
+        .secret-input:focus { 
+            border-color: #ef4444; 
+            background: rgba(255,255,255,0.1); 
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.3);
+            transform: scale(1.02);
+        }
+        .secret-input.error { border-color: #f87171; animation: shake 0.5s; box-shadow: 0 0 20px rgba(248, 113, 113, 0.5); }
+        
+        .secret-btn {
+            margin-top: 30px;
+            padding: 16px 50px; border-radius: 50px;
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            color: white; font-weight: 800; font-size: 1.1rem; letter-spacing: 2px;
+            box-shadow: 0 10px 30px rgba(185, 28, 28, 0.4);
+            transition: all 0.3s; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
+        }
+        .secret-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(185, 28, 28, 0.6);
+            filter: brightness(1.2);
+        }
         
         .close-btn {
             position: absolute; top: 15px; right: 15px; z-index: 10;
@@ -291,6 +393,8 @@
             .card-desc { display: none; }
             .play-btn { width: auto; padding: 12px 20px; font-size: 1rem; }
             .hero-title { font-size: 3.5rem; }
+            .secret-modal-body { padding: 30px; }
+            .secret-title { font-size: 2rem; }
         }
     </style>
 </head>
@@ -303,20 +407,26 @@
         <div class="aurora-blob blob-3"></div>
     </div>
     
-    <!-- NEW PARTICLES CONTAINER (Đom đóm & Lá) -->
+    <!-- PARTICLES CONTAINER -->
     <div class="firefly-container">
+        <!-- Đom đóm thường -->
         <div class="firefly"></div>
         <div class="firefly"></div>
         <div class="firefly"></div>
         <div class="firefly"></div>
         <div class="firefly"></div>
         <div class="firefly"></div>
+        
+        <!-- Lá rơi & Bong bóng -->
         <div class="leaf"></div>
         <div class="leaf"></div>
         <div class="leaf"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
     </div>
+    
+    <!-- SECRET FIREFLY (MOVED OUTSIDE) -->
+    <div class="secret-firefly" onclick="openSecretModal()" title="Catch me if you can!"></div>
 
     <!-- MASTER SCALER CONTAINER -->
     <div id="viewport-scaler">
@@ -324,7 +434,8 @@
         <!-- HEADER -->
         <header>
             <div class="logo-container">
-                <div class="logo-img-wrapper">
+                <!-- UPDATED: Added onclick handler -->
+                <div class="logo-img-wrapper" onclick="openSchoolWebsite()">
                     <img src="logo.png" alt="Logo" class="logo-img" 
                          onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'text-5xl font-bold text-orange-500\'>Y</span>'">
                 </div>
@@ -451,54 +562,60 @@
 
     </div>
 
-    <!-- VIDEO MODAL -->
+    <!-- VIDEO MODAL (Common) -->
     <div id="video-modal" class="modal-overlay">
         <div class="modal-content">
             <button class="close-btn" onclick="closeVideo()"><i class="fas fa-times"></i></button>
             <!-- VIDEO FRAME -->
             <iframe id="video-frame" class="w-full h-full" 
                     src="" 
-                    title="Intro Video" frameborder="0" 
+                    title="Content" frameborder="0" 
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                     allowfullscreen>
             </iframe>
         </div>
     </div>
 
+    <!-- SECRET MODAL (UPDATED DESIGN: NO ICON, BEAUTIFUL) -->
+    <div id="secret-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px; aspect-ratio: auto; min-height: 350px; background: transparent; box-shadow: none; overflow: visible;">
+            <button class="close-btn" onclick="closeSecret()" style="top: -15px; right: -15px; background: #ef4444;"><i class="fas fa-times"></i></button>
+            
+            <div class="secret-modal-body rounded-3xl">
+                <!-- Title -->
+                <h2 class="secret-title">ENTER PASSPHRASE</h2>
+                
+                <!-- Input Field -->
+                <input type="text" id="secret-input" class="secret-input" placeholder="Type the secret word..." autocomplete="off" onkeydown="if(event.key === 'Enter') checkSecret()">
+                
+                <!-- Action Button -->
+                <button onclick="checkSecret()" class="secret-btn">
+                    ACCESS DATA <i class="fas fa-fingerprint ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // --- SCALER LOGIC (TỰ ĐỘNG CO GIÃN & CĂN GIỮA) ---
+        // --- SCALER LOGIC ---
         function fitContent() {
             const scaler = document.getElementById('viewport-scaler');
             const winW = window.innerWidth;
             const winH = window.innerHeight;
-            
-            // Base Width cho PC và Mobile
             const isPortrait = winH > winW;
             const baseWidth = isPortrait ? 480 : 1400;
-            
             scaler.style.width = `${baseWidth}px`;
-
-            // Tính tỉ lệ Scale
-            let scale = (winW - 40) / baseWidth; // Scale theo chiều ngang trước
-            
-            // Kiểm tra chiều cao: Reset transform để đo chiều cao thật
+            let scale = (winW - 40) / baseWidth; 
             scaler.style.transform = 'none';
             scaler.offsetHeight; 
-            
             const contentHeight = scaler.scrollHeight;
-            
-            // Nếu sau khi scale theo chiều ngang mà chiều cao vẫn lớn hơn màn hình
             if (contentHeight * scale > (winH - 40)) {
                 scale = (winH - 40) / contentHeight;
             }
-            
-            // Áp dụng scale
             scaler.style.transform = `translate(-50%, -50%) scale(${scale})`;
-            // Căn giữa tuyệt đối
             scaler.style.position = 'absolute';
             scaler.style.top = '50%';
             scaler.style.left = '50%';
-            
             scaler.style.opacity = '1';
         }
 
@@ -507,9 +624,7 @@
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen();
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
+                if (document.exitFullscreen) document.exitFullscreen();
             }
         }
 
@@ -517,78 +632,103 @@
         function openVideo() {
             const modal = document.getElementById('video-modal');
             const frame = document.getElementById('video-frame');
-            
-            // --- CẤU HÌNH VIDEO INTRO TẠI ĐÂY ---
-            // Cô DÁN LINK GOOGLE DRIVE HOẶC YOUTUBE CỦA CÔ VÀO DƯỚI ĐÂY:
             const rawVideoLink = "https://drive.google.com/file/d/1f1jZMIuYu3fi8ttsOfTi-IDOGvvTaXmQ/view?usp=drive_link"; 
-            
-            // Tự động chuyển đổi link
             const videoUrl = getEmbedUrl(rawVideoLink);
-
             frame.src = videoUrl; 
             modal.classList.add('active');
         }
 
-        // --- NEW: FUNCTION CHO SPEAKING TASK ---
-        function openSpeakingVideo() {
+        // --- NEW: OPEN SCHOOL WEBSITE ---
+        function openSchoolWebsite() {
             const modal = document.getElementById('video-modal');
             const frame = document.getElementById('video-frame');
             
-            // =================================================================
-            // CÔ DÁN LINK VIDEO CÂU HỎI (SPEAKING) VÀO GIỮA DẤU NGOẶC KÉP DƯỚI ĐÂY:
-            // Ví dụ: "https://drive.google.com/file/d/xxxxx/view"
-            const speakingLink = "https://drive.google.com/file/d/1g14WU9DGfhBNuYqoMNMeWQ_gjLw-xpAM/view?usp=sharing"; 
-            // =================================================================
+            frame.src = "https://truongthptyersin.edu.vn/"; 
+            modal.classList.add('active');
+        }
+
+        function openSpeakingVideo() {
+            const modal = document.getElementById('video-modal');
+            const frame = document.getElementById('video-frame');
+            const speakingLink = ""; // DÁN LINK Ở ĐÂY
             
             if (!speakingLink) {
                 alert("Cô chưa dán link video Speaking vào code! Hãy mở file index.html và tìm dòng 'speakingLink'.");
                 return;
             }
-
             const videoUrl = getEmbedUrl(speakingLink);
             frame.src = videoUrl;
             modal.classList.add('active');
         }
 
-        // Hàm hỗ trợ chuyển đổi link
         function getEmbedUrl(url) {
-            // Handle Google Drive
             if (url.includes("drive.google.com")) {
-                // Extract ID between /file/d/ and /view or end of string
                 const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-                if (match && match[1]) {
-                    return `https://drive.google.com/file/d/${match[1]}/preview`;
-                }
+                if (match && match[1]) return `https://drive.google.com/file/d/${match[1]}/preview`;
             }
-            
-            // Handle YouTube
             let videoId = "";
-            if (url.includes("v=")) {
-                videoId = url.split("v=")[1].split("&")[0];
-            } 
-            else if (url.includes("youtu.be/")) {
-                videoId = url.split("youtu.be/")[1].split("?")[0];
-            }
+            if (url.includes("v=")) videoId = url.split("v=")[1].split("&")[0];
+            else if (url.includes("youtu.be/")) videoId = url.split("youtu.be/")[1].split("?")[0];
             
-            if(videoId) {
-                return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-            }
-            
+            if(videoId) return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
             return url;
         }
 
         function closeVideo() {
             const modal = document.getElementById('video-modal');
             const frame = document.getElementById('video-frame');
-            
             modal.classList.remove('active');
-            setTimeout(() => {
-                frame.src = ""; // Tắt video khi đóng
-            }, 300);
+            setTimeout(() => { frame.src = ""; }, 300);
         }
 
         document.getElementById('video-modal').addEventListener('click', (e) => {
             if (e.target.id === 'video-modal') closeVideo();
+        });
+
+        // --- SECRET LOGIC (NEW) ---
+        // Just keeping words for validation, no icons/hints needed
+        const validWords = ["spawning ground", "marine", "debris", "nurseries", "vulnerable"];
+
+        function openSecretModal() {
+            // Update UI
+            document.getElementById('secret-input').value = "";
+            document.getElementById('secret-input').classList.remove('error');
+
+            // Show Secret Modal
+            document.getElementById('secret-modal').classList.add('active');
+            setTimeout(() => document.getElementById('secret-input').focus(), 100);
+        }
+
+        function checkSecret() {
+            const inputVal = document.getElementById('secret-input').value.trim().toLowerCase();
+            
+            // Check if input matches ANY of the valid words
+            if (validWords.includes(inputVal)) {
+                // SUCCESS - CLOSE SECRET, OPEN REWARD IN SAME MODAL
+                closeSecret();
+                
+                // Open Video Modal with Image
+                const modal = document.getElementById('video-modal');
+                const frame = document.getElementById('video-frame');
+                const rewardLink = "https://drive.google.com/file/d/1pasO9owU-8kmzpCyqO-2qZy_oU18v6X1/preview";
+                
+                frame.src = rewardLink;
+                modal.classList.add('active');
+                
+            } else {
+                // FAIL
+                const inputEl = document.getElementById('secret-input');
+                inputEl.classList.add('error');
+                setTimeout(() => inputEl.classList.remove('error'), 500);
+            }
+        }
+
+        function closeSecret() {
+            document.getElementById('secret-modal').classList.remove('active');
+        }
+        
+        document.getElementById('secret-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'secret-modal') closeSecret();
         });
 
         // Chạy scaler
